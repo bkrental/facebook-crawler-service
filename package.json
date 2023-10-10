@@ -9,6 +9,7 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
+    "@aws-sdk/client-ssm": "^3.427.0",
     "puppeteer": "^21.3.8",
     "puppeteer-autoscroll-down": "^1.1.2"
   }
