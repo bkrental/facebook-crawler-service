@@ -29,12 +29,12 @@ async function getPostsFromPage(pageURL, numOfPosts = 10) {
     // Login
     await page.click(config.USERNAME_SELECTOR);
     const emailInput = await getActiveElement(page);
-    const username = await getParameterValue("FB_USERNAME");
+    const username = await getParameterValue("FB_USERNAME", config.USERNAME);
     await emailInput.type(username);
 
     await page.keyboard.press("Tab");
     const passwordInput = await getActiveElement(page);
-    const password = await getParameterValue("FB_PASSWORD");
+    const password = await getParameterValue("FB_PASSWORD", config.PASSWORD);
     await passwordInput.type(password);
 
     await page.keyboard.press("Enter");

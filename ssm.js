@@ -1,6 +1,6 @@
 import { SSMClient, GetParameterCommand } from "@aws-sdk/client-ssm";
 
-export const getParameterValue = async (name) => {
+export const getParameterValue = async (name, defaultValue = "") => {
     const client = new SSMClient({ region: "ap-southeast-2" });
     const input = { Name: name, WithDecryption: true };
     try {
@@ -8,7 +8,7 @@ export const getParameterValue = async (name) => {
         const response = await client.send(command);
         return response?.Parameter.Value ?? "";
     } catch (error) {
-        console.error(`ERROR: ${error.name}`);
-        return "";
+        console.warn(`WARNING: SSM-${error.name}. Using default value`);
+        return defaultValue;
     }
 };
