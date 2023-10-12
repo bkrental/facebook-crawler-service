@@ -2,6 +2,7 @@ import puppeteer from "puppeteer";
 import { scrollPageToBottom } from "puppeteer-autoscroll-down";
 import config from "./config.js";
 import { getParameterValue } from "./ssm.js";
+import fs from "fs";
 
 // Helper function here
 const getActiveElement = async (page) => {
@@ -54,14 +55,15 @@ async function getPostsFromPage(pageURL, numOfPosts = 10) {
         });
     }
 
-    await Bun.write("data.txt", posts.join("\n\n"));
+    fs.writeFileSync("data.txt", posts.join("\n\n"));
 
     await browser.close();
 }
 
-if (Bun.argv[2]) {
-    const pageURL = Bun.argv[2];
-    const numOfPosts = Bun.argv[3] * 1;
+if (process.argv.length > 2) {
+    const pageURL = process.argv[2];
+    const numOfPosts = process.argv[3] * 1;
+    console.log(pageURL, numOfPosts);
     getPostsFromPage(pageURL, numOfPosts);
 } else {
     console.log("ERROR: Please specify the page URL");
