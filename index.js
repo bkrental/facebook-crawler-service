@@ -1,6 +1,7 @@
 import puppeteer from "puppeteer";
 import { scrollPageToBottom } from "puppeteer-autoscroll-down";
 import config from "./config.js";
+import { getParameterValue } from "./ssm.js";
 import fs from "fs";
 
 // Helper function here
@@ -14,7 +15,6 @@ const sleep = (time) => {
 };
 
 async function getPostsFromPage(pageURL, numOfPosts = 10) {
-    // Main content here
     const browser = await puppeteer.launch({
         headless: false,
     });
@@ -30,11 +30,13 @@ async function getPostsFromPage(pageURL, numOfPosts = 10) {
     // Login
     await page.click(config.USERNAME_SELECTOR);
     const emailInput = await getActiveElement(page);
-    await emailInput.type(config.USERNAME);
+    const username = await getParameterValue("FB_USERNAME", config.USERNAME);
+    await emailInput.type(username);
 
     await page.keyboard.press("Tab");
     const passwordInput = await getActiveElement(page);
-    await passwordInput.type(config.PASSWORD);
+    const password = await getParameterValue("FB_PASSWORD", config.PASSWORD);
+    await passwordInput.type(password);
 
     await page.keyboard.press("Enter");
     await page.waitForNavigation();
