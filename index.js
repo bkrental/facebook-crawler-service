@@ -17,6 +17,7 @@ const sleep = (time) => {
 async function getPostsFromPage(pageURL, numOfPosts = 10) {
     const browser = await puppeteer.launch({
         headless: false,
+        timeout: 60000,
     });
 
     const context = browser.defaultBrowserContext();
