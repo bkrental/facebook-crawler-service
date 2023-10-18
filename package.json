@@ -1,17 +1,18 @@
 {
-  "name": "facebook_crawler",
-  "module": "index.js",
+  "name": "chototscrapper",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
   "type": "module",
-  "devDependencies": {
-    "bun-types": "latest"
-  },
-  "peerDependencies": {
-    "typescript": "^5.0.0"
-  },
+  "license": "ISC",
   "dependencies": {
-    "@aws-sdk/client-ssm": "^3.427.0",
-    "openai": "^4.12.1",
-    "puppeteer": "^21.3.8",
-    "puppeteer-autoscroll-down": "^1.1.2"
+    "axios": "^1.5.1",
+    "cheerio": "^1.0.0-rc.12",
+    "fs": "^0.0.1-security",
+    "jsonfile": "^6.1.0"
   }
 }
