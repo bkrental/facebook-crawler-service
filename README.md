@@ -12,11 +12,4 @@ In the terminal, enter "node index.js", this will request 20 posts from the 1st 
 If you want to request data with multiple pages, enter "node index.js " + `NUMBER_OF_PAGES`
 
 
-Step 3: Install dependencies:
-
-
-Step 4: Run the `index.js` file with `PAGE_URL` and `NUMBER_OF_POSTS` arguments:
-
-```bash
-bun run index.js PAGE_URL NUMER_OF_POSTS
-```
+Step 3: The result is found in data.json
