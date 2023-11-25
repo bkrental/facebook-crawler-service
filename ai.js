@@ -1,7 +1,6 @@
 import OpenAI from "openai";
 import config from "./config.js";
 import { getParameterValue } from "./ssm.js";
-import fs from "fs";
 
 export const extractPostInfo = async (post) => {
     const openai = new OpenAI({
