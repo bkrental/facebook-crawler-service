@@ -1,0 +1,16 @@
+{
+  "name": "facebook_crawler",
+  "module": "index.js",
+  "devDependencies": {
+    "bun-types": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@aws-sdk/client-ssm": "^3.427.0",
+    "openai": "^4.12.1",
+    "puppeteer": "^21.3.8",
+    "puppeteer-autoscroll-down": "^1.1.2"
+  }
+}
