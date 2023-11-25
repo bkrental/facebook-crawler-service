@@ -1,9 +1,8 @@
 import OpenAI from "openai";
 import config from "./config.js";
 import { getParameterValue } from "./ssm.js";
-import fs from "fs";
 
-export const extractPostInfo = async (posts) => {
+export const extractPostInfo = async (post) => {
     const openai = new OpenAI({
         apiKey: await getParameterValue(
             "OPENAI_API_KEY",
@@ -19,7 +18,7 @@ export const extractPostInfo = async (posts) => {
         },
         {
             role: "user",
-            content: posts,
+            content: post,
         },
     ];
 
@@ -31,7 +30,3 @@ export const extractPostInfo = async (posts) => {
 
     return chatCompletion.choices[0].message.content;
 };
-
-const posts = fs.readFileSync("data.txt", "utf8");
-
-console.log(await extractPostInfo(posts));

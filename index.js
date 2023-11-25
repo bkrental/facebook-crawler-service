@@ -1,71 +1,34 @@
-import puppeteer from "puppeteer";
-import { scrollPageToBottom } from "puppeteer-autoscroll-down";
-import config from "./config.js";
-import { getParameterValue } from "./ssm.js";
-import fs from "fs";
+const { readFileSync, appendFileSync } = require("fs");
+const puppeteer = require("puppeteer");
+const getFBPosts = require("./crawler.js");
 
-// Helper function here
-const getActiveElement = async (page) => {
-    const element = await page.evaluateHandle(() => document.activeElement);
-    return element;
-};
+const INPUT_PATH = "../data/pages.txt"; // The list of facebook page URLs to crawl
+const OUTPUT_PATH = "../data/posts.txt"; // The output file
 
-const sleep = (time) => {
-    return new Promise((resolve) => setTimeout(resolve, time));
-};
-
-async function getPostsFromPage(pageURL, numOfPosts = 10) {
+(async () => {
     const browser = await puppeteer.launch({
-        headless: false,
+        headless: "new",
+        args: ["--disable-notifications"],
         timeout: 60000,
     });
 
-    const context = browser.defaultBrowserContext();
-    context.overridePermissions(pageURL, ["notifications"]);
+    const pageURLs = readFileSync(INPUT_PATH, "utf8").trim().split("\n");
 
-    const page = await browser.newPage();
-    await page.setViewport({ width: 1080, height: 1024 });
+    const errorHandler = async (page, error) => {
+        console.error(error.message);
+        await page.screenshot({ path: `${OUTPUT_DIR}/error.png` });
+    };
 
-    await page.goto(pageURL);
+    const callback = async (post, index) => {
+        appendFileSync(OUTPUT_PATH, "\n\n\n" + post.content);
+        console.log("Done with post" + index);
+    };
 
-    // Login
-    await page.click(config.USERNAME_SELECTOR);
-    const emailInput = await getActiveElement(page);
-    const username = await getParameterValue("FB_USERNAME", config.USERNAME);
-    await emailInput.type(username);
-
-    await page.keyboard.press("Tab");
-    const passwordInput = await getActiveElement(page);
-    const password = await getParameterValue("FB_PASSWORD", config.PASSWORD);
-    await passwordInput.type(password);
-
-    await page.keyboard.press("Enter");
-    await page.waitForNavigation();
-
-    let posts = [];
-    while (posts.length < numOfPosts) {
-        posts = await page.$$eval(config.POST_SELECTOR, (posts) =>
-            Array.from(posts).map((post) => post.textContent)
-        );
-        await scrollPageToBottom(page, { size: 500, delay: 250 });
-        await page.evaluate(() => {
-            const btns = document.querySelectorAll('div[role="button"]');
-            Array.from(btns)
-                .filter((btn) => btn.textContent === "See more")
-                .forEach((btn) => btn.click());
-        });
+    for (const url of pageURLs) {
+        console.log("Starting with " + url);
+        await getFBPosts(browser, url, callback, errorHandler);
+        console.log("Done with " + url);
     }
 
-    fs.writeFileSync("data.txt", posts.join("\n\n"));
-
     await browser.close();
-}
-
-if (process.argv.length > 2) {
-    const pageURL = process.argv[2];
-    const numOfPosts = process.argv[3] * 1;
-    console.log(pageURL, numOfPosts);
-    getPostsFromPage(pageURL, numOfPosts);
-} else {
-    console.log("ERROR: Please specify the page URL");
-}
+})();

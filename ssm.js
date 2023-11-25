@@ -1,7 +1,7 @@
-import { SSMClient, GetParameterCommand } from "@aws-sdk/client-ssm";
+const { SSMClient, GetParameterCommand } = require("@aws-sdk/client-ssm");
 
-export const getParameterValue = async (name, defaultValue = "") => {
-    const client = new SSMClient({ region: "ap-southeast-2" });
+const getParameterValue = async (name, defaultValue = "") => {
+    const client = new SSMClient({ region: "ap-southeast-1" });
     const input = { Name: name, WithDecryption: true };
     try {
         const command = new GetParameterCommand(input);
@@ -12,3 +12,5 @@ export const getParameterValue = async (name, defaultValue = "") => {
         return defaultValue;
     }
 };
+
+module.exports = getParameterValue;
