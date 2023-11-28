@@ -3,6 +3,10 @@ const config = require("./config.js");
 const getParameterValue = require("./ssm.js");
 
 // Helper function here
+const checkIsGroupURL = (url) => {
+    return url.startsWith("https://www.facebook.com/groups/");
+};
+
 const getActiveElement = async (page) => {
     const element = await page.evaluateHandle(() => document.activeElement);
     return element;
@@ -55,12 +59,14 @@ const getPostId = async (postURL) => {
     return null;
 };
 
-const getPostContent = async (postElement) => {
-    const content = await postElement.$eval(
+const getPostContent = async (postElement, isFBGroup = false) => {
+    if (isFBGroup)
+        return await (await postElement.getProperty("textContent")).jsonValue();
+
+    return await postElement.$eval(
         config.CONTENT_SELECTOR,
         (e) => e.textContent
     );
-    return content;
 };
 
 async function login(page) {
@@ -78,17 +84,15 @@ async function login(page) {
     await page.waitForNavigation();
 }
 
-async function getFBPosts(
-    browser,
-    pageURL,
-    callback = async () => {},
-    errorHandler = async () => {}
-) {
+async function getFBPosts(browser, url, callback, errorHandler) {
     const page = await browser.newPage();
     await page.setViewport({ width: 1080, height: 1024 });
 
     try {
-        await page.goto(pageURL);
+        await page.goto(url);
+        const isFBGroup = checkIsGroupURL(url);
+
+        await sleep(3000);
 
         // Login
         if ((await page.$(config.USERNAME_SELECTOR)) != null) {
@@ -97,14 +101,24 @@ async function getFBPosts(
         }
 
         let posts = [];
-        let numOfPostsOnPage = 0;
+        let numOfPosts = 0;
+        const postSelector = isFBGroup
+            ? config.GROUP_POST_SELECTOR
+            : config.PAGE_POST_SELECTOR;
+
+        if (isFBGroup) console.log("[INFO]: Crawling a facebook group");
+        else console.log("[INFO]: Crawling a facebook page");
+
         while (true) {
             await scrollPageToBottom(page, { size: 200, delay: 100 });
-            posts = await page.$$(config.POST_SELECTOR);
-            if (posts.length <= numOfPostsOnPage || posts.length > 20) break;
-            numOfPostsOnPage = posts.length;
+            posts = await page.$$(postSelector);
+            if (posts.length <= numOfPosts || posts.length > 20) break;
+            numOfPosts = posts.length;
         }
 
+        console.log(`[INFO]: Found ${posts.length} posts`);
+
+        // Click on See more btn
         await page.evaluate(() => {
             const btns = document.querySelectorAll('div[role="button"]');
             Array.from(btns)
@@ -113,12 +127,16 @@ async function getFBPosts(
         });
 
         const data = [];
-        posts = posts.slice(0, 20);
         for (const [index, post] of posts.entries()) {
-            const url = await getPostURL(await getEmbedContent(page, post));
-            const id = await getPostId(url);
-            const content = await getPostContent(post);
-            const postInfo = { url, id, content };
+            let postInfo = {
+                content: await getPostContent(post, isFBGroup),
+            };
+
+            if (!isFBGroup) {
+                const url = await getPostURL(await getEmbedContent(page, post));
+                const id = await getPostId(url);
+                postInfo = { ...postInfo, url, id };
+            }
             await callback(postInfo, index);
             data.push(postInfo);
         }
